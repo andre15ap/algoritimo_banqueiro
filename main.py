@@ -23,11 +23,12 @@ class Main(object):
 		self.banqueiro = Banqueiro(int(valor), lista)
 
 	def menu(self):
-		print("\n Escolha a pessoa Abaixo")
+		self.mostra_lista_espera()
+		print("\n Saldo Banqueiro: {} \n Escolha a pessoa Abaixo".format(self.banqueiro.saldo))
 		for i in self.banqueiro.lista:
-			print("\n [{}] para {} ".format(i.codigo, i.nome), end="")
+			print("\n [{}] para {} - saldo {}".format(i.codigo, i.nome, i.saldo), end="")
 		print("\n [0] para Sair ", end="")
-		print("\n [-1] para ver a lista de Espera ", end="")
+		# print("\n [-1] para ver a lista de Espera ", end="")
 		mensagem = input("\n")
 		os.system('cls' if os.name == 'nt' else 'clear')
 		return int(mensagem)
@@ -39,6 +40,7 @@ class Main(object):
 				self.banqueiro.saldo += i.saldo
 				i.saldo = 0
 				i.ciclo = 0
+				self.lista_espera()
 			# else:
 			# 	print(i.ciclo)
 		
@@ -57,7 +59,6 @@ class Main(object):
 				pessoa.ciclo = 0
 
 		else:
-			self.verifica_ciclo()
 			valor = input('Quanto Deseja Pegar? \n')
 			if not valor.isdigit():
 				print('Valor informado inválido')
@@ -72,8 +73,35 @@ class Main(object):
 				print('Solicitação Negada!\n')
 			else:
 				self.aumenta_ciclo()
+				dic_espera = {
+					"pessoa":pessoa,
+					"valor":valor
+				}
+				for i in self.banqueiro.lista_espera:
+					if pessoa == i["pessoa"]:
+						print("Já esta na lista de espera Aquarde!")
+						return
+				self.banqueiro.lista_espera.append(dic_espera)
 				print('Aquarde na lista de Espera !\n')
 
+	def lista_espera(self):
+		if len(self.banqueiro.lista_espera) > 0:
+			for i in self.banqueiro.lista_espera:
+				#tem saldo para essa pessoa
+				if i["valor"] <= self.banqueiro.saldo:
+					i["pessoa"].saldo = i["valor"]
+					self.banqueiro.saldo -= i["valor"]
+					print("\t Lista de Espera: {} Recebeu seu emprestimo de {}".format(i["pessoa"].nome, i["pessoa"].saldo))
+					self.banqueiro.lista_espera.remove(i)
+					return
+
+
+	def mostra_lista_espera(self):
+		if len(self.banqueiro.lista_espera) > 0:
+			print("Lista de Espera:")
+
+			for i in self.banqueiro.lista_espera:
+				print("- {}, Aquardando o valor de {}".format(i["pessoa"].nome, i["valor"] ))
 
 	def executar(self):
 		
@@ -90,7 +118,7 @@ class Main(object):
 				print('Sair')
 				break
 			
-
+			self.verifica_ciclo()
 			entrada = self.menu()
 
 
